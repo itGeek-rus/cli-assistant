@@ -1,0 +1,9 @@
+log_level: info
+output: human
+profile: default
+
+profiles:
+  default:
+    kube_context: minikube
+    gitops_url: https://argocd.example.com
+    metrics_url: http://localhost:9090
