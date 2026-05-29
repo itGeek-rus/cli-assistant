@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"cli-assistant/internal/adapter/noop"
 	"cli-assistant/internal/config"
 	"cli-assistant/internal/delivery/cli"
 	"cli-assistant/internal/usecase"
@@ -22,10 +23,13 @@ func newContainer() (*container, error) {
 
 	logger := log.New(cfg.LogLevel, os.Stderr)
 
-	dep := usecase.NewDeployment(logger)
-	obs := usecase.NewObservability(logger)
+	gitops := noop.NewGitOps()
+	obsReader := noop.NewObservability()
+
+	dep := usecase.NewDeployment(cfg, logger, gitops)
+	obs := usecase.NewObservability(logger, cfg, obsReader)
 
 	return &container{
-		app: cli.NewApp(cfg, *obs, dep, logger),
+		app: cli.NewApp(cfg, obs, dep, logger),
 	}, nil
 }

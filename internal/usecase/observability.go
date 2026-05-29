@@ -1,20 +1,45 @@
 package usecase
 
 import (
+	"cli-assistant/internal/config"
+	"cli-assistant/internal/domain/observe"
 	"context"
+	"fmt"
 	"log/slog"
 )
 
 type Observability struct {
-	log *slog.Logger
+	log    *slog.Logger
+	cfg    config.Config
+	reader observe.ObservabilityReader
 }
 
-func NewObservability(log *slog.Logger) *Observability {
-	return &Observability{log: log}
+func NewObservability(log *slog.Logger, cfg config.Config, reader observe.ObservabilityReader) *Observability {
+	return &Observability{log: log, cfg: cfg, reader: reader}
 }
 
-// TODO: Временная загрушка
 func (u *Observability) Health(ctx context.Context) error {
-	u.log.InfoContext(ctx, "observability health (not implemented yet)")
+	scope, err := scopeFromConfig(u.cfg)
+	if err != nil {
+		return err
+	}
+
+	health, err := u.reader.CheckStackHealth(ctx, scope)
+	if err != nil {
+		return fmt.Errorf("check stack health: %w", err)
+	}
+
+	u.log.InfoContext(ctx, "observability stack",
+		"overall", health.Overall,
+		"checked_at", health.CheckedAt,
+	)
+	for _, c := range health.Components {
+		u.log.InfoContext(ctx, "component",
+			"name", c.Name,
+			"status", c.Status,
+			"message", c.Message,
+			"url", c.URL,
+		)
+	}
 	return nil
 }
