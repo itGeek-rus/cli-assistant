@@ -1,6 +1,7 @@
 package main
 
 import (
+	"cli-assistant/internal/adapter/factory"
 	"fmt"
 	"os"
 
@@ -23,11 +24,13 @@ func newContainer() (*container, error) {
 
 	logger := log.New(cfg.LogLevel, os.Stderr)
 
-	gitops := noop.NewGitOps()
-	obsReader := noop.NewObservability()
+	gitops, err := factory.NewGitOpsReader(cfg)
+	if err != nil {
+		return nil, fmt.Errorf("gitops reader: %w", err)
+	}
 
 	dep := usecase.NewDeployment(cfg, logger, gitops)
-	obs := usecase.NewObservability(logger, cfg, obsReader)
+	obs := usecase.NewObservability(logger, cfg, noop.NewObservability())
 
 	return &container{
 		app: cli.NewApp(cfg, obs, dep, logger),

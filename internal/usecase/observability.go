@@ -1,11 +1,12 @@
 package usecase
 
 import (
-	"cli-assistant/internal/config"
-	"cli-assistant/internal/domain/observe"
 	"context"
 	"fmt"
 	"log/slog"
+
+	"cli-assistant/internal/config"
+	"cli-assistant/internal/domain/observe"
 )
 
 type Observability struct {

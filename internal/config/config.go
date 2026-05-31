@@ -17,14 +17,21 @@ type Config struct {
 	LogLevel string             `yaml:"log_level"`
 	Output   string             `yaml:"output"`
 	Profile  string             `yaml:"profile"`
+	GitOps   GitOpsConfig       `yaml:"gitops"`
 	Profiles map[string]Profile `yaml:"profiles"`
 }
 
+type GitOpsConfig struct {
+	Provider string `yaml:"provider"`
+}
+
 type Profile struct {
-	KubeContext string `yaml:"kube_context"`
-	GitOpsURL   string `yaml:"gitops_url"`  // Argo CD
-	MetricsURL  string `yaml:"metrics_url"` // Prometheus
-	LogsURL     string `yaml:"logs_url"`    // Loki
+	KubeContext    string `yaml:"kube_context"`
+	GitOpsURL      string `yaml:"gitops_url"` // Argo CD
+	GitOpsTokenEnv string `yaml:"gitops_token_env"`
+	GitOpsInsecure bool   `yaml:"gitops_insecure"`
+	MetricsURL     string `yaml:"metrics_url"` // Prometheus
+	LogsURL        string `yaml:"logs_url"`    // Loki
 }
 
 func Default() Config {
@@ -32,8 +39,13 @@ func Default() Config {
 		LogLevel: "info",
 		Output:   "human",
 		Profile:  "default",
+		GitOps: GitOpsConfig{
+			Provider: "noop",
+		},
 		Profiles: map[string]Profile{
-			"default": {},
+			"default": {
+				GitOpsTokenEnv: "ARGOCD_AUTH_TOKEN",
+			},
 		},
 	}
 }
@@ -88,6 +100,9 @@ func applyEnv(cfg *Config) {
 	}
 	if v := os.Getenv(EnvPrefix + "_PROFILE"); v != "" {
 		cfg.Profile = v
+	}
+	if v := os.Getenv(EnvPrefix + "_GITOPS_PROVIDER"); v != "" {
+		cfg.GitOps.Provider = v
 	}
 }
 
