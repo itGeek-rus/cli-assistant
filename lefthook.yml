@@ -1,0 +1,22 @@
+pre-commit:
+  parallel: true
+  commands:
+    go-fmt:
+      glob: "*.go"
+      run: gofmt -w {staged_files} && git add {staged_files}
+    go-vet:
+      glob: "*.go"
+      run: go vet ./...
+    golangci-lint:
+      glob: "*.go"
+      run: golangci-lint run ./...
+    go-mod-tidy:
+      glob: "go.mod"
+      run: go mod tidy && git add go.mod go.sum
+
+pre-push:
+  commands:
+    test:
+      run: go test ./...
+    build:
+      run: go build -o /dev/null ./cmd/app

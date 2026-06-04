@@ -24,12 +24,12 @@ func newContainer() (*container, error) {
 
 	logger := log.New(cfg.LogLevel, os.Stderr)
 
-	gitops, err := factory.NewGitOpsReader(cfg)
+	gitops, err := factory.NewGitOpsClient(cfg)
 	if err != nil {
-		return nil, fmt.Errorf("gitops reader: %w", err)
+		return nil, fmt.Errorf("gitops client: %w", err)
 	}
 
-	dep := usecase.NewDeployment(cfg, logger, gitops)
+	dep := usecase.NewDeployment(logger, cfg, gitops)
 	obs := usecase.NewObservability(logger, cfg, noop.NewObservability())
 
 	return &container{

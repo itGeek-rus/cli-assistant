@@ -41,7 +41,7 @@ func New(opt Options) (*Client, error) {
 	}
 	transport := http.DefaultTransport.(*http.Transport).Clone()
 	if opt.Insecure {
-		transport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true} // nolint:gosec
+		transport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true} // #nosec: G402
 	}
 	return &Client{
 		baseURL: strings.TrimRight(opt.BaseURL, "/"),
@@ -61,7 +61,10 @@ func NewFromScope(scope domain.Scope, token string, insecure bool) (*Client, err
 	})
 }
 
-var _ deploy.GitOpsReader = (*Client)(nil)
+var (
+	_ deploy.GitOpsReader = (*Client)(nil)
+	_ deploy.GitOpsClient = (*Client)(nil)
+)
 
 func (c *Client) ListApplications(
 	ctx context.Context,

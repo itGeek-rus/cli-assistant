@@ -85,3 +85,47 @@ tasks:
     deps: [build]
     cmds:
       - "{{.OUT}} deploy status {{.CLI_ARGS}}"
+
+  vuln:
+    desc: Run vulnerability scanner (govulncheck)
+    cmds:
+      - go install golang.org/x/vuln/cmd/govulncheck@latest
+      - govulncheck ./...
+
+  gosec:
+    desc: Run gosec security linter
+    cmds:
+      - go install github.com/securego/gosec/v2/cmd/gosec@latest
+      - gosec -exclude=G104 ./...
+
+  deps:
+    desc: Check dependencies for known vulnerabilities (Nancy)
+    cmds:
+      - go list -json -deps ./... | nancy sleuth
+
+  lint:
+    desc: Run golangci-lint (requires .golangci.yml)
+    cmds:
+      - golangci-lint run ./...
+
+  arch:
+    desc: Check architecture rules (.go-arch-lint.yml)
+    cmds:
+      - go-arch-lint check
+
+  cleancode:
+    desc: Run all code quality & security checks
+    cmds:
+      - task: fmt
+      - task: vet
+      - task: lint
+      - task: gosec
+      - task: test
+    deps: [tidy]
+
+  precommit:
+    desc: Quick checks for pre-commit hook
+    cmds:
+      - task: fmt
+      - task: vet
+      - task: lint
