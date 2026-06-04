@@ -13,11 +13,11 @@ import (
 type Deployment struct {
 	log    *slog.Logger
 	cfg    config.Config
-	gitops deploy.GitOpsReader
+	gitops deploy.GitOpsClient
 }
 
-func NewDeployment(cfg config.Config, log *slog.Logger, gitops deploy.GitOpsReader) *Deployment {
-	return &Deployment{cfg: cfg, log: log, gitops: gitops}
+func NewDeployment(log *slog.Logger, cfg config.Config, gitops deploy.GitOpsClient) *Deployment {
+	return &Deployment{log: log, cfg: cfg, gitops: gitops}
 }
 
 type ListResult struct {
@@ -68,4 +68,64 @@ func (u *Deployment) Status(ctx context.Context, name string) (StatusResult, err
 	}
 
 	return StatusResult{Application: app}, nil
+}
+
+func (u *Deployment) Sync(ctx context.Context, name string, opts deploy.SyncOptions, confirmed bool) (deploy.SyncResult, error) {
+	if name == "" {
+		return deploy.SyncResult{}, fmt.Errorf("%w: application name is required", domain.ErrInvalidInput)
+	}
+
+	scope, err := scopeFromConfig(u.cfg)
+	if err != nil {
+		return deploy.SyncResult{}, err
+	}
+
+	if opts.DryRun {
+		diff, err := u.gitops.DiffApplication(ctx, scope, name)
+		if err != nil {
+			return deploy.SyncResult{}, fmt.Errorf("diff application: %w", err)
+		}
+		msg := syncDryRunMessage(diff)
+		return deploy.SyncResult{
+			Application: name,
+			DryRun:      true,
+			Initiated:   false,
+			Message:     msg,
+		}, nil
+	}
+
+	if !confirmed {
+		return deploy.SyncResult{}, fmt.Errorf("%w: confirmation required (use --yes)", domain.ErrInvalidInput)
+	}
+
+	res, err := u.gitops.SyncApplication(ctx, scope, name, opts)
+	if err != nil {
+		return deploy.SyncResult{}, fmt.Errorf("sync application: %w", err)
+	}
+	return res, nil
+}
+
+func (u *Deployment) Diff(ctx context.Context, name string) (deploy.DiffResult, error) {
+	if name == "" {
+		return deploy.DiffResult{}, fmt.Errorf("%w: application name is required", domain.ErrInvalidInput)
+	}
+	scope, err := scopeFromConfig(u.cfg)
+	if err != nil {
+		return deploy.DiffResult{}, err
+	}
+	diff, err := u.gitops.DiffApplication(ctx, scope, name)
+	if err != nil {
+		return deploy.DiffResult{}, fmt.Errorf("diff application: %w", err)
+	}
+	return diff, nil
+}
+
+func syncDryRunMessage(diff deploy.DiffResult) string {
+	if diff.Raw != "" {
+		return "dry-run: " + diff.Raw
+	}
+	if diff.OutOfSync {
+		return fmt.Sprintf("dry-run: application %q is out of sync", diff.Application)
+	}
+	return fmt.Sprintf("dry-run: application %q is in sync", diff.Application)
 }

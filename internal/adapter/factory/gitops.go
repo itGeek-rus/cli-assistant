@@ -37,6 +37,18 @@ func NewGitOpsReader(cfg config.Config) (deploy.GitOpsReader, error) {
 	}
 }
 
+func NewGitOpsClient(cfg config.Config) (deploy.GitOpsClient, error) {
+	reader, err := NewGitOpsReader(cfg)
+	if err != nil {
+		return nil, err
+	}
+	client, ok := reader.(deploy.GitOpsClient)
+	if !ok {
+		return nil, fmt.Errorf("gitops provider %q does not support write operations", cfg.GitOps.Provider)
+	}
+	return client, nil
+}
+
 func scopeFromConfig(cfg config.Config) (domain.Scope, error) {
 	profile, err := cfg.ActiveProfile()
 	if err != nil {

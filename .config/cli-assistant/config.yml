@@ -3,7 +3,10 @@ output: human
 profile: default
 
 gitops:
-  provide: argocd
+  provider: noop
+
+observability:
+  provider: noop
 
 profiles:
   default:
@@ -12,3 +15,4 @@ profiles:
     gitops_token_env: ARGOCD_AUTH_TOKEN
     gitops_insecure: false
     metrics_url: http://localhost:9090
+    logs_url: http://localhost:3100

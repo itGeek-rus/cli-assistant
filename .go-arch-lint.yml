@@ -1,0 +1,56 @@
+version: 3
+
+allow:
+  depOnAnyVendor: true
+
+excludeFiles:
+  - "^.*_test\\.go$"
+
+components:
+  cmd:
+    in: cmd/**
+  delivery:
+    in: internal/delivery/**
+  usecase:
+    in: internal/usecase/**
+  domain:
+    in: internal/domain/**
+  adapter:
+    in: internal/adapter/**
+  config:
+    in: internal/config/**
+  pkg:
+    in: pkg/**
+
+deps:
+  cmd:
+    anyProjectDeps: true
+
+  delivery:
+    mayDependOn:
+      - usecase
+      - config
+      - pkg
+      - domain
+
+  usecase:
+    mayDependOn:
+      - domain
+      - config
+
+  adapter:
+    mayDependOn:
+      - domain
+      - config
+
+  domain:
+    mayDependOn:
+      - domain
+
+  config:
+    anyVendorDeps: true
+
+  pkg:
+    mayDependOn:
+      - domain
+    anyVendorDeps: true

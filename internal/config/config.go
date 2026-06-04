@@ -43,14 +43,14 @@ func Default() Config {
 			Provider: "noop",
 		},
 		Profiles: map[string]Profile{
-			"default": {
+			"default": { // #nosec: G101
 				GitOpsTokenEnv: "ARGOCD_AUTH_TOKEN",
 			},
 		},
 	}
 }
 
-func ConfigDir() (string, error) {
+func Dir() (string, error) {
 	dir, err := os.UserConfigDir()
 	if err != nil {
 		return "", fmt.Errorf("user config dir: %w", err)
@@ -58,8 +58,8 @@ func ConfigDir() (string, error) {
 	return filepath.Join(dir, DefaultAppName), nil
 }
 
-func ConfigPath() (string, error) {
-	dir, err := ConfigDir()
+func Path() (string, error) {
+	dir, err := Dir()
 	if err != nil {
 		return "", err
 	}
@@ -69,12 +69,12 @@ func ConfigPath() (string, error) {
 func Load() (Config, error) {
 	cfg := Default()
 
-	path, err := ConfigPath()
+	path, err := Path()
 	if err != nil {
 		return cfg, err
 	}
 
-	data, err := os.ReadFile(path)
+	data, err := os.ReadFile(path) // #nosec:G304
 	if err != nil {
 		if os.IsNotExist(err) {
 			applyEnv(&cfg)

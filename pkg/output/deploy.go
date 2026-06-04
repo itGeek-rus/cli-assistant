@@ -2,6 +2,7 @@ package output
 
 import (
 	"cli-assistant/internal/domain/deploy"
+	"fmt"
 	"time"
 )
 
@@ -53,4 +54,26 @@ func (p *Printer) PrintApplications(apps []deploy.Application) error {
 
 func (p *Printer) PrintApplication(app deploy.Application) error {
 	return p.PrintApplications([]deploy.Application{app})
+}
+
+func (p *Printer) PrintDiff(diff deploy.DiffResult) error {
+	if p.format == FormatJSON {
+		return p.Print(diff)
+	}
+	if diff.Raw != "" {
+		_, err := fmt.Fprintln(p.w, diff.Raw)
+		return err
+	}
+	for _, ch := range diff.Changes {
+		fmt.Fprintf(p.w, "%s/%s: %s\n", ch.Kind, ch.Name, ch.Summary)
+	}
+	return nil
+}
+
+func (p *Printer) PrintSync(res deploy.SyncResult) error {
+	if p.format == FormatJSON {
+		return p.Print(res)
+	}
+	fmt.Fprintf(p.w, "%s: %s\n", res.Application, res.Message)
+	return nil
 }

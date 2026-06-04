@@ -1,0 +1,42 @@
+run:
+  timeout: 5m
+  modules-download-mode: readonly
+
+linters:
+  enable:
+    - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+    - gosec
+    - revive
+    - misspell
+    - unconvert
+    - bodyclose
+    - noctx
+  disable:
+    - prealloc
+
+linters-settings:
+  gosec:
+    excludes:
+      - G104
+    severity: medium
+    confidence: medium
+  revive:
+    ignore-generated-header: true
+    rules:
+      - name: exported
+        severity: warning
+      - name: blank-imports
+      - name: context-keys-type
+      - name: error-return
+
+issues:
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - gosec
+        - errcheck
