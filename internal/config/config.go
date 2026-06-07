@@ -14,24 +14,30 @@ const (
 )
 
 type Config struct {
-	LogLevel string             `yaml:"log_level"`
-	Output   string             `yaml:"output"`
-	Profile  string             `yaml:"profile"`
-	GitOps   GitOpsConfig       `yaml:"gitops"`
-	Profiles map[string]Profile `yaml:"profiles"`
+	LogLevel      string              `yaml:"log_level"`
+	Output        string              `yaml:"output"`
+	Profile       string              `yaml:"profile"`
+	GitOps        GitOpsConfig        `yaml:"gitops"`
+	Observability ObservabilityConfig `yaml:"observability"`
+	Profiles      map[string]Profile  `yaml:"profiles"`
 }
 
 type GitOpsConfig struct {
 	Provider string `yaml:"provider"`
 }
 
+type ObservabilityConfig struct {
+	Provider string `yaml:"provider"`
+}
+
 type Profile struct {
-	KubeContext    string `yaml:"kube_context"`
-	GitOpsURL      string `yaml:"gitops_url"` // Argo CD
-	GitOpsTokenEnv string `yaml:"gitops_token_env"`
-	GitOpsInsecure bool   `yaml:"gitops_insecure"`
-	MetricsURL     string `yaml:"metrics_url"` // Prometheus
-	LogsURL        string `yaml:"logs_url"`    // Loki
+	KubeContext     string `yaml:"kube_context"`
+	GitOpsURL       string `yaml:"gitops_url"` // Argo CD
+	GitOpsTokenEnv  string `yaml:"gitops_token_env"`
+	GitOpsInsecure  bool   `yaml:"gitops_insecure"`
+	MetricsURL      string `yaml:"metrics_url"` // Prometheus
+	MetricsInsecure bool   `yaml:"metrics_insecure"`
+	LogsURL         string `yaml:"logs_url"` // Loki
 }
 
 func Default() Config {
@@ -40,6 +46,9 @@ func Default() Config {
 		Output:   "human",
 		Profile:  "default",
 		GitOps: GitOpsConfig{
+			Provider: "noop",
+		},
+		Observability: ObservabilityConfig{
 			Provider: "noop",
 		},
 		Profiles: map[string]Profile{
@@ -103,6 +112,9 @@ func applyEnv(cfg *Config) {
 	}
 	if v := os.Getenv(EnvPrefix + "_GITOPS_PROVIDER"); v != "" {
 		cfg.GitOps.Provider = v
+	}
+	if v := os.Getenv(EnvPrefix + "_OBSERVABILITY_PROVIDER"); v != "" {
+		cfg.Observability.Provider = v
 	}
 }
 

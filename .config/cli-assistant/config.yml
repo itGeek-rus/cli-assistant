@@ -6,7 +6,7 @@ gitops:
   provider: noop
 
 observability:
-  provider: noop
+  provider: prometheus
 
 profiles:
   default:

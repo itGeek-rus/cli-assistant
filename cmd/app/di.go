@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 
-	"cli-assistant/internal/adapter/noop"
 	"cli-assistant/internal/config"
 	"cli-assistant/internal/delivery/cli"
 	"cli-assistant/internal/usecase"
@@ -30,7 +29,12 @@ func newContainer() (*container, error) {
 	}
 
 	dep := usecase.NewDeployment(logger, cfg, gitops)
-	obs := usecase.NewObservability(logger, cfg, noop.NewObservability())
+
+	obsReader, err := factory.NewObservabilityReader(cfg)
+	if err != nil {
+		return nil, fmt.Errorf("observability reader: %w", err)
+	}
+	obs := usecase.NewObservability(logger, cfg, obsReader)
 
 	return &container{
 		app: cli.NewApp(cfg, obs, dep, logger),

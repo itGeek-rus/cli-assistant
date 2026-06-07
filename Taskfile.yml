@@ -129,3 +129,15 @@ tasks:
       - task: fmt
       - task: vet
       - task: lint
+
+  demo:query:
+    desc: observe query up (noop)
+    deps: [build]
+    cmds:
+      - '{{.OUT}} observe query up'
+
+  demo:alerts:
+    desc: observe alerts (noop)
+    deps: [build]
+    cmds:
+      - '{{.OUT}} observe alerts'
