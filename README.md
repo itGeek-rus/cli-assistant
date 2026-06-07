@@ -4,8 +4,6 @@
 
 Помогает управлять деплоями, отслеживать состояние приложений и работать с observability-стеком из терминала.
 
-**Статус:** этапы 1–5 — GitOps read/write (`list`, `status`, `diff`, `sync`) и Observability read (`health`, `query`, `alerts`).
-
 ## Быстрый старт
 
 ```bash
