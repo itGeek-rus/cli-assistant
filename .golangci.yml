@@ -33,6 +33,14 @@ linters-settings:
       - name: blank-imports
       - name: context-keys-type
       - name: error-return
+  lll:
+    line-length: 120
+    tab-width: 1
+  funlen:
+    lines: 60
+    statements: 40
+  gocyclo:
+    min-complexity: 10
 
 issues:
   exclude-rules:
@@ -40,3 +48,6 @@ issues:
       linters:
         - gosec
         - errcheck
+        - lll
+        - funlen
+        - gocyclo

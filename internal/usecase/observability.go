@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"cli-assistant/internal/domain"
 	"context"
 	"fmt"
 	"log/slog"
@@ -19,28 +20,59 @@ func NewObservability(log *slog.Logger, cfg config.Config, reader observe.Observ
 	return &Observability{log: log, cfg: cfg, reader: reader}
 }
 
-func (u *Observability) Health(ctx context.Context) error {
+type HealthResult struct {
+	Health observe.StackHealth
+}
+
+type QueryResult struct {
+	Result observe.QueryResult
+}
+
+type AlertResult struct {
+	Alerts []observe.Alert
+}
+
+func (u *Observability) Health(ctx context.Context) (HealthResult, error) {
 	scope, err := scopeFromConfig(u.cfg)
 	if err != nil {
-		return err
+		return HealthResult{}, err
 	}
 
 	health, err := u.reader.CheckStackHealth(ctx, scope)
 	if err != nil {
-		return fmt.Errorf("check stack health: %w", err)
+		return HealthResult{}, fmt.Errorf("check stack health: %w", err)
 	}
 
-	u.log.InfoContext(ctx, "observability stack",
+	u.log.DebugContext(ctx, "observability stack",
 		"overall", health.Overall,
-		"checked_at", health.CheckedAt,
+		"components", len(health.Components),
 	)
-	for _, c := range health.Components {
-		u.log.InfoContext(ctx, "component",
-			"name", c.Name,
-			"status", c.Status,
-			"message", c.Message,
-			"url", c.URL,
-		)
+	return HealthResult{Health: health}, nil
+}
+
+func (u *Observability) Query(ctx context.Context, expr string) (QueryResult, error) {
+	if expr == "" {
+		return QueryResult{}, fmt.Errorf("%w: query expression is required", domain.ErrInvalidInput)
 	}
-	return nil
+	scope, err := scopeFromConfig(u.cfg)
+	if err != nil {
+		return QueryResult{}, err
+	}
+	res, err := u.reader.QueryMetrics(ctx, scope, observe.QueryRequest{Expr: expr})
+	if err != nil {
+		return QueryResult{}, fmt.Errorf("query metrics: %w", err)
+	}
+	return QueryResult{Result: res}, nil
+}
+
+func (u *Observability) Alert(ctx context.Context, filter observe.AlertFilter) (AlertResult, error) {
+	scope, err := scopeFromConfig(u.cfg)
+	if err != nil {
+		return AlertResult{}, err
+	}
+	alerts, err := u.reader.ListAlerts(ctx, scope, filter)
+	if err != nil {
+		return AlertResult{}, fmt.Errorf("list alerts: %w", err)
+	}
+	return AlertResult{Alerts: alerts}, nil
 }

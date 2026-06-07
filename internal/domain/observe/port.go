@@ -8,4 +8,5 @@ import (
 type ObservabilityReader interface {
 	CheckStackHealth(ctx context.Context, scope domain.Scope) (StackHealth, error)
 	ListAlerts(ctx context.Context, scope domain.Scope, filter AlertFilter) ([]Alert, error)
+	QueryMetrics(ctx context.Context, scope domain.Scope, req QueryRequest) (QueryResult, error)
 }

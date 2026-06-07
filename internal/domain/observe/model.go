@@ -46,9 +46,28 @@ type Alert struct {
 	Severity AlertSeverity
 	State    AlertState
 	Summary  string
+	StartAt  time.Time
+	Labels   map[string]string
 }
 
 type AlertFilter struct {
 	State  AlertState
 	Labels map[string]string
+}
+
+type QueryRequest struct {
+	Expr string    // PromQL
+	Time time.Time // zer0 == now (instant query)
+}
+
+type QuerySample struct {
+	Labels map[string]string
+	Value  float64
+	Time   time.Time
+}
+
+type QueryResult struct {
+	Expr     string
+	Samples  []QuerySample
+	Warnings []string
 }
