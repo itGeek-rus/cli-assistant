@@ -25,7 +25,7 @@ func NewObservabilityReader(cfg config.Config) (observe.ObservabilityReader, err
 		if err != nil {
 			return nil, err
 		}
-		return prometheus.NewFromScope(scope, profile.GitOpsInsecure)
+		return prometheus.NewFromScope(scope, profile.MetricsInsecure)
 	default:
 		return nil, fmt.Errorf("unsupported observability provider: %q", cfg.Observability.Provider)
 	}

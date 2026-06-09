@@ -38,6 +38,7 @@ type Profile struct {
 	MetricsURL      string `yaml:"metrics_url"` // Prometheus
 	MetricsInsecure bool   `yaml:"metrics_insecure"`
 	LogsURL         string `yaml:"logs_url"` // Loki
+	LogsInsecure    bool   `yaml:"logs_insecure"`
 }
 
 func Default() Config {

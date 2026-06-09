@@ -28,9 +28,10 @@ tasks:
       - go run {{.CMD}} -- {{.CLI_ARGS}}
 
   install:
-    desc: Install binary to GOPATH/bin
+    desc: Install binary to GOPATH/bin and install assistant to GOPATH/bin
     cmds:
       - go install {{.CMD}}
+      - go build -o $(go env GOPATH)/bin/assistant/ {{.CMD}}
 
   test:
     desc: Run unit tests
