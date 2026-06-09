@@ -62,7 +62,7 @@ func newObserveAlertsCmd(a *App) *cobra.Command {
 			if state != "" {
 				filter.State = observe.AlertState(state)
 			}
-			res, err := a.observe.Alert(cmd.Context(), filter)
+			res, err := a.observe.Alerts(cmd.Context(), filter)
 			if err != nil {
 				return err
 			}

@@ -57,7 +57,7 @@ type AlertFilter struct {
 
 type QueryRequest struct {
 	Expr string    // PromQL
-	Time time.Time // zer0 == now (instant query)
+	Time time.Time // zero == now (instant query)
 }
 
 type QuerySample struct {

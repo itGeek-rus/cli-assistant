@@ -65,7 +65,7 @@ func (u *Observability) Query(ctx context.Context, expr string) (QueryResult, er
 	return QueryResult{Result: res}, nil
 }
 
-func (u *Observability) Alert(ctx context.Context, filter observe.AlertFilter) (AlertResult, error) {
+func (u *Observability) Alerts(ctx context.Context, filter observe.AlertFilter) (AlertResult, error) {
 	scope, err := scopeFromConfig(u.cfg)
 	if err != nil {
 		return AlertResult{}, err
