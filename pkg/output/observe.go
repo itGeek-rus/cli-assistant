@@ -89,7 +89,7 @@ type AlertView struct {
 	Labels   map[string]string `json:"labels,omitempty"`
 }
 
-func alertViews(alerts []observe.Alert) []AlertView {
+func AlertViews(alerts []observe.Alert) []AlertView {
 	out := make([]AlertView, 0, len(alerts))
 	for _, a := range alerts {
 		v := AlertView{
@@ -108,7 +108,7 @@ func alertViews(alerts []observe.Alert) []AlertView {
 }
 
 func (p *Printer) PrintAlerts(alerts []observe.Alert) error {
-	views := alertViews(alerts)
+	views := AlertViews(alerts)
 	if p.format == FormatJSON {
 		return p.Print(views)
 	}
@@ -122,4 +122,58 @@ func (p *Printer) PrintAlerts(alerts []observe.Alert) error {
 		rows = append(rows, []string{v.Name, v.Severity, v.State, v.Summary})
 	}
 	return p.PrintTable(headers, rows)
+}
+
+func (p *Printer) PrintLogs(r observe.LogResult) error {
+	if p.format == FormatJSON {
+		return p.Print(r)
+	}
+	if len(r.Entries) == 0 {
+		fmt.Fprintln(p.w, "no log entries")
+		return nil
+	}
+	for _, e := range r.Entries {
+		fmt.Fprintf(p.w, "%s %s\n", e.Timestamp.UTC().Format(time.RFC3339), e.Line)
+	}
+	return nil
+}
+
+type InspectView struct {
+	AppName      string         `json:"app_name"`
+	Namespace    string         `json:"namespace"`
+	SyncStatus   string         `json:"sync_status"`
+	HealthStatus string         `json:"health_status"`
+	MetricExpr   string         `json:"metric_expr"`
+	MetricValue  *float64       `json:"metric_value,omitempty"`
+	Alerts       []AlertView    `json:"alerts"`
+	Logs         []LogEntryView `json:"logs"`
+}
+
+type LogEntryView struct {
+	Timestamp string            `json:"timestamp"`
+	Line      string            `json:"line"`
+	Labels    map[string]string `json:"labels,omitempty"`
+}
+
+func (p *Printer) PrintInspect(v InspectView) error {
+	if p.format == FormatJSON {
+		return p.Print(v)
+	}
+	fmt.Fprintf(p.w, "APP: %s (%s) sync=%s health=%s\n",
+		v.AppName, v.Namespace, v.SyncStatus, v.HealthStatus)
+	fmt.Fprintf(p.w, "METRIC: %s\n", v.MetricExpr)
+	if v.MetricValue != nil {
+		fmt.Fprintf(p.w, "  => %.2f\n", *v.MetricValue)
+	} else {
+		fmt.Fprintln(p.w, "  => n/a")
+	}
+	fmt.Fprintf(p.w, "ALERTS (%d):\n", len(v.Alerts))
+	for _, a := range v.Alerts {
+		fmt.Fprintf(p.w, "  - [%s] %s: %s\n", a.Severity, a.Name, a.Summary)
+	}
+	fmt.Fprintf(p.w, "LOGS (%d):\n", len(v.Logs))
+	for _, e := range v.Logs {
+		fmt.Fprintf(p.w, "  %s %s\n", e.Timestamp, e.Line)
+	}
+	return nil
 }

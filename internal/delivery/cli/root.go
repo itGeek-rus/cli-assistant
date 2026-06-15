@@ -18,15 +18,11 @@ type App struct {
 	log        *slog.Logger
 	deployment *usecase.Deployment
 	observe    *usecase.Observability
+	inspector  *usecase.Inspector
 }
 
-func NewApp(
-	cfg config.Config,
-	observe *usecase.Observability,
-	deployment *usecase.Deployment,
-	log *slog.Logger,
-) *App {
-	return &App{cfg: cfg, observe: observe, deployment: deployment, log: log}
+func NewApp(cfg config.Config, observe *usecase.Observability, deployment *usecase.Deployment, inspector *usecase.Inspector, log *slog.Logger) *App {
+	return &App{cfg: cfg, observe: observe, deployment: deployment, inspector: inspector, log: log}
 }
 
 func (a *App) Run() int {

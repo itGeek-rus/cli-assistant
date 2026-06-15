@@ -4,6 +4,7 @@ import (
 	"cli-assistant/internal/config"
 	"cli-assistant/internal/domain"
 	"cli-assistant/internal/domain/deploy"
+	"cli-assistant/internal/platform/scope"
 	"context"
 	"errors"
 	"fmt"
@@ -29,7 +30,7 @@ type StatusResult struct {
 }
 
 func (u *Deployment) List(ctx context.Context, filter deploy.ListFilter) (ListResult, error) {
-	scope, err := scopeFromConfig(u.cfg)
+	scope, err := scope.FromConfig(u.cfg)
 	if err != nil {
 		return ListResult{}, err
 	}
@@ -41,7 +42,7 @@ func (u *Deployment) List(ctx context.Context, filter deploy.ListFilter) (ListRe
 }
 
 func (u *Deployment) Status(ctx context.Context, name string) (StatusResult, error) {
-	scope, err := scopeFromConfig(u.cfg)
+	scope, err := scope.FromConfig(u.cfg)
 	if err != nil {
 		return StatusResult{}, err
 	}
@@ -75,7 +76,7 @@ func (u *Deployment) Sync(ctx context.Context, name string, opts deploy.SyncOpti
 		return deploy.SyncResult{}, fmt.Errorf("%w: application name is required", domain.ErrInvalidInput)
 	}
 
-	scope, err := scopeFromConfig(u.cfg)
+	scope, err := scope.FromConfig(u.cfg)
 	if err != nil {
 		return deploy.SyncResult{}, err
 	}
@@ -109,7 +110,7 @@ func (u *Deployment) Diff(ctx context.Context, name string) (deploy.DiffResult, 
 	if name == "" {
 		return deploy.DiffResult{}, fmt.Errorf("%w: application name is required", domain.ErrInvalidInput)
 	}
-	scope, err := scopeFromConfig(u.cfg)
+	scope, err := scope.FromConfig(u.cfg)
 	if err != nil {
 		return deploy.DiffResult{}, err
 	}

@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	"time"
 
 	"cli-assistant/internal/domain/deploy"
 	"cli-assistant/pkg/output"
@@ -14,7 +15,7 @@ func newDeployCmd(a *App) *cobra.Command {
 		Use:   "deploy",
 		Short: "GitOps deployment operations",
 	}
-	cmd.AddCommand(newDeployListCmd(a), newDeployStatusCmd(a), newDeploySyncCmd(a), newDeployDiffCmd(a))
+	cmd.AddCommand(newDeployListCmd(a), newDeployStatusCmd(a), newDeploySyncCmd(a), newDeployDiffCmd(a), newDeployInspectCmd(a))
 	return cmd
 }
 
@@ -131,4 +132,39 @@ func newDeployDiffCmd(a *App) *cobra.Command {
 		},
 	}
 	return cmd
+}
+
+func newDeployInspectCmd(a *App) *cobra.Command {
+	return &cobra.Command{
+		Use:   "inspect [name]",
+		Short: "Inspect app: GitOps status + alerts + metrics + logs",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			res, err := a.inspector.Inspect(cmd.Context(), args[0])
+			if err != nil {
+				return err
+			}
+			view := output.InspectView{
+				AppName:      res.Application.Name,
+				Namespace:    res.Application.Namespace,
+				SyncStatus:   string(res.Application.SyncStatus),
+				HealthStatus: string(res.Application.HealthStatus),
+				MetricExpr:   res.MetricExpr,
+				Alerts:       output.AlertViews(res.Alerts),
+			}
+			if res.MetricUp != nil {
+				v := res.MetricUp.Value
+				view.MetricValue = &v
+			}
+			for _, e := range res.Logs.Entries {
+				view.Logs = append(view.Logs, output.LogEntryView{
+					Timestamp: e.Timestamp.UTC().Format(time.RFC3339),
+					Line:      e.Line,
+					Labels:    e.Labels,
+				})
+			}
+			printer := output.NewPrinter(output.ParseFormat(a.cfg.Output), cmd.OutOrStdout())
+			return printer.PrintInspect(view)
+		},
+	}
 }

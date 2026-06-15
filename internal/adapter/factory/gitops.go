@@ -4,14 +4,14 @@ import (
 	"cli-assistant/internal/adapter/argocd"
 	"cli-assistant/internal/adapter/noop"
 	"cli-assistant/internal/config"
-	"cli-assistant/internal/domain"
 	"cli-assistant/internal/domain/deploy"
+	"cli-assistant/internal/platform/scope"
 	"fmt"
 	"os"
 )
 
 func NewGitOpsReader(cfg config.Config) (deploy.GitOpsReader, error) {
-	scope, err := scopeFromConfig(cfg)
+	s, err := scope.FromConfig(cfg)
 	if err != nil {
 		return nil, err
 	}
@@ -31,7 +31,7 @@ func NewGitOpsReader(cfg config.Config) (deploy.GitOpsReader, error) {
 		if token == "" {
 			return nil, fmt.Errorf("argocd: set token in %s", profile.GitOpsTokenEnv)
 		}
-		return argocd.NewFromScope(scope, token, profile.GitOpsInsecure)
+		return argocd.NewFromScope(s, token, profile.GitOpsInsecure)
 	default:
 		return nil, fmt.Errorf("unsupported gitops provider %q", cfg.GitOps.Provider)
 	}
@@ -47,18 +47,4 @@ func NewGitOpsClient(cfg config.Config) (deploy.GitOpsClient, error) {
 		return nil, fmt.Errorf("gitops provider %q does not support write operations", cfg.GitOps.Provider)
 	}
 	return client, nil
-}
-
-func scopeFromConfig(cfg config.Config) (domain.Scope, error) {
-	profile, err := cfg.ActiveProfile()
-	if err != nil {
-		return domain.Scope{}, fmt.Errorf("active profile: %w", err)
-	}
-	return domain.Scope{
-		ProfileName: cfg.Profile,
-		KubeContext: profile.KubeContext,
-		GitOpsURL:   profile.GitOpsURL,
-		MetricsURL:  profile.MetricsURL,
-		LogsURL:     profile.LogsURL,
-	}, nil
 }

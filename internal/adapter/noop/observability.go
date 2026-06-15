@@ -78,3 +78,29 @@ func (o *Observability) ListAlerts(
 	}
 	return alerts, nil
 }
+
+func (o *Observability) QueryLog(
+	_ context.Context,
+	_ domain.Scope,
+	req observe.LogsRequest,
+) (observe.LogResult, error) {
+	if req.Query == "" {
+		return observe.LogResult{}, fmt.Errorf("%w: log query is required", domain.ErrInvalidInput)
+	}
+	now := time.Now().UTC()
+	return observe.LogResult{
+		Query: req.Query,
+		Entries: []observe.LogEntry{
+			{
+				Timestamp: now.Add(-2 * time.Minute),
+				Line:      `{"level":"info","msg":"demo-app started"}`,
+				Labels:    map[string]string{"app": "demo-app", "pod": "demo-app-abc"},
+			},
+			{
+				Timestamp: now.Add(-1 * time.Minute),
+				Line:      `{"level":"warn","msg":"high memory usage"}`,
+				Labels:    map[string]string{"app": "demo-app", "pod": "demo-app-abc"},
+			},
+		},
+	}, nil
+}
