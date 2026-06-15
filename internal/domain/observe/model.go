@@ -71,3 +71,22 @@ type QueryResult struct {
 	Samples  []QuerySample
 	Warnings []string
 }
+
+type LogsRequest struct {
+	Query string
+	Since time.Duration // 0 = 1h default
+	Limit int           // 0 = 100 default
+}
+
+type LogEntry struct {
+	Timestamp time.Time
+	Line      string
+	Labels    map[string]string
+}
+
+type LogResult struct {
+	Query   string
+	Entries []LogEntry
+	Since   time.Duration
+	Limit   int
+}

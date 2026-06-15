@@ -27,7 +27,8 @@ type GitOpsConfig struct {
 }
 
 type ObservabilityConfig struct {
-	Provider string `yaml:"provider"`
+	Provider     string `yaml:"provider"`      // noop | prometheus
+	LogsProvider string `yaml:"logs_provider"` // noop | loki (пусто = noop)
 }
 
 type Profile struct {
@@ -116,6 +117,9 @@ func applyEnv(cfg *Config) {
 	}
 	if v := os.Getenv(EnvPrefix + "_OBSERVABILITY_PROVIDER"); v != "" {
 		cfg.Observability.Provider = v
+	}
+	if v := os.Getenv(EnvPrefix + "_LOGS_PROVIDER"); v != "" {
+		cfg.Observability.LogsProvider = v
 	}
 }
 

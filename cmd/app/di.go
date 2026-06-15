@@ -34,9 +34,12 @@ func newContainer() (*container, error) {
 	if err != nil {
 		return nil, fmt.Errorf("observability reader: %w", err)
 	}
+
+	inspector := usecase.NewInspector(logger, cfg, gitops, obsReader)
+
 	obs := usecase.NewObservability(logger, cfg, obsReader)
 
 	return &container{
-		app: cli.NewApp(cfg, obs, dep, logger),
+		app: cli.NewApp(cfg, obs, dep, inspector, logger),
 	}, nil
 }

@@ -2,9 +2,11 @@ package usecase
 
 import (
 	"cli-assistant/internal/domain"
+	"cli-assistant/internal/platform/scope"
 	"context"
 	"fmt"
 	"log/slog"
+	"time"
 
 	"cli-assistant/internal/config"
 	"cli-assistant/internal/domain/observe"
@@ -33,12 +35,12 @@ type AlertResult struct {
 }
 
 func (u *Observability) Health(ctx context.Context) (HealthResult, error) {
-	scope, err := scopeFromConfig(u.cfg)
+	s, err := scope.FromConfig(u.cfg)
 	if err != nil {
 		return HealthResult{}, err
 	}
 
-	health, err := u.reader.CheckStackHealth(ctx, scope)
+	health, err := u.reader.CheckStackHealth(ctx, s)
 	if err != nil {
 		return HealthResult{}, fmt.Errorf("check stack health: %w", err)
 	}
@@ -54,11 +56,11 @@ func (u *Observability) Query(ctx context.Context, expr string) (QueryResult, er
 	if expr == "" {
 		return QueryResult{}, fmt.Errorf("%w: query expression is required", domain.ErrInvalidInput)
 	}
-	scope, err := scopeFromConfig(u.cfg)
+	s, err := scope.FromConfig(u.cfg)
 	if err != nil {
 		return QueryResult{}, err
 	}
-	res, err := u.reader.QueryMetrics(ctx, scope, observe.QueryRequest{Expr: expr})
+	res, err := u.reader.QueryMetrics(ctx, s, observe.QueryRequest{Expr: expr})
 	if err != nil {
 		return QueryResult{}, fmt.Errorf("query metrics: %w", err)
 	}
@@ -66,13 +68,32 @@ func (u *Observability) Query(ctx context.Context, expr string) (QueryResult, er
 }
 
 func (u *Observability) Alerts(ctx context.Context, filter observe.AlertFilter) (AlertResult, error) {
-	scope, err := scopeFromConfig(u.cfg)
+	s, err := scope.FromConfig(u.cfg)
 	if err != nil {
 		return AlertResult{}, err
 	}
-	alerts, err := u.reader.ListAlerts(ctx, scope, filter)
+	alerts, err := u.reader.ListAlerts(ctx, s, filter)
 	if err != nil {
 		return AlertResult{}, fmt.Errorf("list alerts: %w", err)
 	}
 	return AlertResult{Alerts: alerts}, nil
+}
+
+func (u *Observability) Logs(ctx context.Context, query string, since time.Duration, limit int) (observe.LogResult, error) {
+	if query == "" {
+		return observe.LogResult{}, fmt.Errorf("%w: log query is required", domain.ErrInvalidInput)
+	}
+	s, err := scope.FromConfig(u.cfg)
+	if err != nil {
+		return observe.LogResult{}, err
+	}
+	res, err := u.reader.QueryLog(ctx, s, observe.LogsRequest{
+		Query: query,
+		Since: since,
+		Limit: limit,
+	})
+	if err != nil {
+		return observe.LogResult{}, fmt.Errorf("query logs: %w", err)
+	}
+	return res, nil
 }

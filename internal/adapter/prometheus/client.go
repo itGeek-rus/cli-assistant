@@ -104,6 +104,14 @@ func (c *Client) checkEndpoint(ctx context.Context, name, endpoint string) obser
 	}
 }
 
+func (c *Client) QueryLog(
+	_ context.Context,
+	_ domain.Scope,
+	_ observe.LogsRequest,
+) (observe.LogResult, error) {
+	return observe.LogResult{}, fmt.Errorf("%w: logs not supported by prometheus adapter", domain.ErrUnavailable)
+}
+
 func (c *Client) ListAlerts(
 	ctx context.Context,
 	scope domain.Scope,
