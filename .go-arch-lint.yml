@@ -16,11 +16,21 @@ components:
   domain:
     in: internal/domain/**
   adapter:
-    in: internal/adapter/**
+    in:
+      - internal/adapter/argocd/**
+      - internal/adapter/noop/**
+      - internal/adapter/prometheus/**
+      - internal/adapter/loki/**
+      - internal/adapter/alertmanager/**
+      - internal/adapter/composite/**
+  factory:
+    in: internal/adapter/factory/**
   config:
     in: internal/config/**
   pkg:
     in: pkg/**
+  platform:
+    in: internal/platform/**
 
 deps:
   cmd:
@@ -37,11 +47,20 @@ deps:
     mayDependOn:
       - domain
       - config
+      - platform
 
   adapter:
     mayDependOn:
       - domain
       - config
+      - platform
+
+  factory:
+    mayDependOn:
+      - adapter
+      - domain
+      - config
+      - platform
 
   domain:
     mayDependOn:
@@ -49,6 +68,11 @@ deps:
 
   config:
     anyVendorDeps: true
+
+  platform:
+    mayDependOn:
+      - domain
+      - config
 
   pkg:
     mayDependOn:
