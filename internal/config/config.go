@@ -27,8 +27,9 @@ type GitOpsConfig struct {
 }
 
 type ObservabilityConfig struct {
-	Provider     string `yaml:"provider"`      // noop | prometheus
-	LogsProvider string `yaml:"logs_provider"` // noop | loki (пусто = noop)
+	Provider       string `yaml:"provider"`        // noop | prometheus
+	LogsProvider   string `yaml:"logs_provider"`   // noop | loki (пусто = noop)
+	AlertsProvider string `yaml:"alerts_provider"` // noop | alertmanager (пусто = noop)
 }
 
 type Profile struct {
@@ -40,6 +41,8 @@ type Profile struct {
 	MetricsInsecure bool   `yaml:"metrics_insecure"`
 	LogsURL         string `yaml:"logs_url"` // Loki
 	LogsInsecure    bool   `yaml:"logs_insecure"`
+	AlertsURL       string `yaml:"alerts_url"` // Alertmanager
+	AlertsInsecure  bool   `yaml:"alerts_insecure"`
 }
 
 func Default() Config {
@@ -120,6 +123,9 @@ func applyEnv(cfg *Config) {
 	}
 	if v := os.Getenv(EnvPrefix + "_LOGS_PROVIDER"); v != "" {
 		cfg.Observability.LogsProvider = v
+	}
+	if v := os.Getenv(EnvPrefix + "_ALERTS_PROVIDER"); v != "" {
+		cfg.Observability.AlertsProvider = v
 	}
 }
 

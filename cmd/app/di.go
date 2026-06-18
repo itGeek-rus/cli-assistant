@@ -9,6 +9,7 @@ import (
 	"cli-assistant/internal/delivery/cli"
 	"cli-assistant/internal/usecase"
 	"cli-assistant/pkg/log"
+	"cli-assistant/pkg/version"
 )
 
 type container struct {
@@ -40,6 +41,7 @@ func newContainer() (*container, error) {
 	obs := usecase.NewObservability(logger, cfg, obsReader)
 
 	return &container{
-		app: cli.NewApp(cfg, obs, dep, inspector, logger),
+		app: cli.NewApp(cfg, obs, dep, inspector, logger,
+			version.Version, version.Commit, version.BuildDate),
 	}, nil
 }

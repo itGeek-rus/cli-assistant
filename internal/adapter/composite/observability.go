@@ -11,13 +11,18 @@ type LogsQuerier interface {
 	QueryLog(ctx context.Context, scope domain.Scope, req observe.LogsRequest) (observe.LogResult, error)
 }
 
-type Reader struct {
-	core observe.ObservabilityReader // metrics + health + alert
-	logs LogsQuerier
+type AlertsLister interface {
+	ListAlerts(ctx context.Context, scope domain.Scope, filter observe.AlertFilter) ([]observe.Alert, error)
 }
 
-func New(core observe.ObservabilityReader, logs LogsQuerier) *Reader {
-	return &Reader{core: core, logs: logs}
+type Reader struct {
+	core   observe.ObservabilityReader // metrics + health + alert
+	alerts AlertsLister
+	logs   LogsQuerier
+}
+
+func New(core observe.ObservabilityReader, alerts AlertsLister, logs LogsQuerier) *Reader {
+	return &Reader{core: core, alerts: alerts, logs: logs}
 }
 
 var _ observe.ObservabilityReader = (*Reader)(nil)
@@ -27,6 +32,9 @@ func (r *Reader) CheckStackHealth(ctx context.Context, scope domain.Scope) (obse
 }
 
 func (r *Reader) ListAlerts(ctx context.Context, scope domain.Scope, filter observe.AlertFilter) ([]observe.Alert, error) {
+	if r.alerts != nil {
+		return r.alerts.ListAlerts(ctx, scope, filter)
+	}
 	return r.core.ListAlerts(ctx, scope, filter)
 }
 

@@ -4,6 +4,17 @@ vars:
   BINARY: assistant
   CMD: ./cmd/app
   OUT: bin/{{.BINARY}}
+  VERSION:
+    sh: git describe --tags --always --dirty 2>/dev/null || echo dev
+  COMMIT:
+    sh: git rev-parse --short HEAD 2>/dev/null || echo none
+  BUILD_DATE:
+    sh: date -u +%Y-%m-%dT%H:%M:%SZ
+  LDFLAGS: >-
+    -s -w
+    -X cli-assistant/pkg/version.Version={{.VERSION}}
+    -X cli-assistant/pkg/version.Commit={{.COMMIT}}
+    -X cli-assistant/pkg/version.BuildDate={{.BUILD_DATE}}
 
 tasks:
   default:
@@ -14,13 +25,29 @@ tasks:
   build:
     desc: Build binary to bin/assistant
     cmds:
-      - go build -o {{.OUT}} {{.CMD}}
+      - go build -ldflags "{{.LDFLAGS}}" -o {{.OUT}} {{.CMD}}
     sources:
       - "**/*.go"
       - go.mod
       - go.sum
     generates:
       - "{{.OUT}}"
+
+  docker:build:
+    desc: Build container image
+    cmds:
+      - >-
+        docker build
+        --build-arg VERSION={{.VERSION}}
+        --build-arg COMMIT={{.COMMIT}}
+        --build-arg BUILD_DATE={{.BUILD_DATE}}
+        -t cli-assistant:{{.VERSION}} .
+
+  docker:run:
+    desc: Run assistant in container (pass args after --)
+    deps: [docker:build]
+    cmds:
+      - docker run --rm -v "$HOME/.config/cli_assistant:/home/nonroot/.config/cli_assistant:ro" cli-assistant:{{.VERSION}} {{.CLI_ARGS}}
 
   run:
     desc: Run without installing (pass CLI args after --)
@@ -31,7 +58,7 @@ tasks:
     desc: Install binary to GOPATH/bin and install assistant to GOPATH/bin
     cmds:
       - go install {{.CMD}}
-      - go build -o $(go env GOPATH)/bin/assistant/ {{.CMD}}
+      - go build -ldflags "{{.LDFLAGS}}" -o $(go env GOPATH)/bin/assistant {{.CMD}}
 
   test:
     desc: Run unit tests
@@ -114,16 +141,6 @@ tasks:
     cmds:
       - go-arch-lint check
 
-  cleancode:
-    desc: Run all code quality & security checks
-    cmds:
-      - task: fmt
-      - task: vet
-      - task: lint
-      - task: gosec
-      - task: test
-    deps: [tidy]
-
   precommit:
     desc: Quick checks for pre-commit hook
     cmds:
@@ -133,12 +150,41 @@ tasks:
 
   demo:query:
     desc: observe query up (noop)
-    deps: [build]
+    deps: [ build ]
     cmds:
       - '{{.OUT}} observe query up'
 
   demo:alerts:
     desc: observe alerts (noop)
-    deps: [build]
+    deps: [ build ]
     cmds:
       - '{{.OUT}} observe alerts'
+
+  demo:logs:
+    desc: observe logs demo (noop)
+    deps: [ build ]
+    cmds:
+      - '{{.OUT}} observe logs ''{app="demo-app"}'' --since 30m --limit 10'
+
+  demo:inspect:
+    desc: deploy inspect demo (noop)
+    deps: [ build ]
+    cmds:
+      - "{{.OUT}} deploy inspect demo-app"
+
+  demo:version:
+    desc: print build version
+    deps: [ build ]
+    cmds:
+      - "{{.OUT}} version"
+
+  cleancode:
+    desc: Run all code quality & security checks
+    cmds:
+      - task: fmt
+      - task: vet
+      - task: lint
+      - task: gosec
+      - task: test
+      - task: arch
+    deps: [tidy]

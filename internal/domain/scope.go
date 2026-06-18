@@ -7,5 +7,6 @@ type Scope struct {
 	GitOpsURL   string
 	MetricsURL  string
 	LogsURL     string
+	AlertsURL   string
 	Namespace   string
 }

@@ -120,7 +120,7 @@ func (c *Client) ListAlerts(
 	_ = ctx
 	_ = scope
 	_ = filter
-	return nil, nil
+	return nil, fmt.Errorf("%w: alerts not supported by prometheus adapter; use alerts_provider: alertmanager", domain.ErrUnavailable)
 }
 
 func (c *Client) QueryMetrics(

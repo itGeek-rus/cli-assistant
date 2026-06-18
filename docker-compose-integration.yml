@@ -1,2 +1,21 @@
-# Integration-тесты (этап 8): mock Argo CD / Prometheus.
-services: {}
+services:
+  argocd-mock:
+    image: wiremock/wiremock:3.9.1
+    volumes:
+      - ./testdata/argocd:/home/wiremock
+    ports:
+      - ["8080:8080"]
+
+  prometheus-mock:
+    image: wiremock/wiremock:3.9.1
+    volumes:
+      - ./testdata/prometheus:/home/wiremock
+    ports:
+      - ["9090:8080"]
+
+  loki-mock:
+    image: wiremock/wiremock:3.9.1
+    volumes:
+      - ./testdata/loki:/home/wiremock
+    ports:
+      - ["3100:8080"]

@@ -8,6 +8,7 @@ gitops:
 observability:
   provider: prometheus
   logs_provider: loki
+  alerts_provider: alertmanager
 
 profiles:
   default:
@@ -19,3 +20,5 @@ profiles:
     metrics_insecure: false
     logs_url: http://localhost:3100
     logs_insecure: false
+    alerts_url: http://localhost:9093
+    alerts_insecure: false

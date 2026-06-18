@@ -19,10 +19,24 @@ type App struct {
 	deployment *usecase.Deployment
 	observe    *usecase.Observability
 	inspector  *usecase.Inspector
+	version    string
+	commit     string
+	buildDate  string
 }
 
-func NewApp(cfg config.Config, observe *usecase.Observability, deployment *usecase.Deployment, inspector *usecase.Inspector, log *slog.Logger) *App {
-	return &App{cfg: cfg, observe: observe, deployment: deployment, inspector: inspector, log: log}
+func NewApp(
+	cfg config.Config,
+	observe *usecase.Observability,
+	deployment *usecase.Deployment,
+	inspector *usecase.Inspector,
+	log *slog.Logger,
+	version, commit, buildDate string,
+) *App {
+	return &App{
+		cfg: cfg, observe: observe, deployment: deployment,
+		inspector: inspector, log: log,
+		version: version, commit: commit, buildDate: buildDate,
+	}
 }
 
 func (a *App) Run() int {
@@ -59,7 +73,10 @@ func (a *App) versionCmd() *cobra.Command {
 		Use:   "version",
 		Short: "Print version",
 		Run: func(cmd *cobra.Command, _ []string) {
-			fmt.Fprintf(cmd.OutOrStdout(), "assistant dev (%s profile)\n", a.cfg.Profile)
+			fmt.Fprintf(cmd.OutOrStdout(),
+				"assistant %s\nprofile: %s\ncommit: %s\nbuilt: %s\n",
+				a.version, a.cfg.Profile, a.commit, a.buildDate,
+			)
 		},
 	}
 }

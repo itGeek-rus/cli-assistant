@@ -17,5 +17,6 @@ func FromConfig(cfg config.Config) (domain.Scope, error) {
 		GitOpsURL:   profile.GitOpsURL,
 		MetricsURL:  profile.MetricsURL,
 		LogsURL:     profile.LogsURL,
+		AlertsURL:   profile.AlertsURL,
 	}, nil
 }
