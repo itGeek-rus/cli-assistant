@@ -73,6 +73,9 @@ func Dir() (string, error) {
 }
 
 func Path() (string, error) {
+	if p := os.Getenv(EnvPrefix + "_CONFIG"); p != "" {
+		return p, nil
+	}
 	dir, err := Dir()
 	if err != nil {
 		return "", err
@@ -102,6 +105,7 @@ func Load() (Config, error) {
 	}
 
 	applyEnv(&cfg)
+	WarnInsecurePermissions(path)
 	return cfg, nil
 }
 
@@ -135,4 +139,15 @@ func (c Config) ActiveProfile() (Profile, error) {
 		return Profile{}, fmt.Errorf("profile %q not found", c.Profile)
 	}
 	return p, nil
+}
+
+func WarnInsecurePermissions(path string) {
+	info, err := os.Stat(path)
+	if err != nil {
+		return
+	}
+	if info.Mode().Perm()&0o077 != 0 {
+		fmt.Fprintf(os.Stderr, "warning: config %s is world/group-readable (mode %04o); use chmod 600\n",
+			path, info.Mode().Perm()&0o777)
+	}
 }

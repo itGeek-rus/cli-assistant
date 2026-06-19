@@ -5,7 +5,9 @@ vars:
   CMD: ./cmd/app
   OUT: bin/{{.BINARY}}
   VERSION:
-    sh: git describe --tags --always --dirty 2>/dev/null || echo dev
+    sh: |
+      v=$(git describe --tags --always --dirty 2>/dev/null | sed 's/^v//')
+      echo "${v:-dev}"
   COMMIT:
     sh: git rev-parse --short HEAD 2>/dev/null || echo none
   BUILD_DATE:
@@ -188,3 +190,32 @@ tasks:
       - task: test
       - task: arch
     deps: [tidy]
+
+  integration:up:
+    desc: Start WireMock stack
+    cmds:
+      - docker compose -f docker-compose-integration.yml up -d
+
+  integration:down:
+    cmds:
+      - docker compose -f docker-compose-integration.yml down -v
+
+  test:integration:
+    desc: Integration tests (WireMock)
+    deps: [integration:up]
+    env:
+      INTEGRATION: "1"
+      ASSISTANT_BIN: "{{.TASKFILE_DIR}}/{{.OUT}}"
+    cmds:
+      - defer: { task: integration:down }
+      - go build -ldflags "{{.LDFLAGS}}" -o {{.OUT}} {{.CMD}}
+      - go test -tags=integration ./test/integration/...
+
+  dev:up:
+    desc: Start local Prometheus/Loki/Alertmanager/Grafana
+    cmds:
+      - docker compose up -d
+
+  dev:down:
+    cmds:
+      - docker compose down -v

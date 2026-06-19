@@ -271,3 +271,31 @@ GitHub Actions: [`.github/workflows/ci.yml`](.github/workflows/ci.yml) — `go v
 | `alertmanager: alerts_url is required` | Укажи `alerts_url` или `alerts_provider: noop` |
 | `unsupported alerts provider` | Проверь опечатку: `alertmanager`, не `alertmanger` |
 | `go install` даёт `app` | Используй `task install` или `go build -o .../bin/assistant` |
+
+## Версионирование
+
+Проект следует [Semantic Versioning](https://semver.org/): `MAJOR.MINOR.PATCH`.
+
+| Версия | Когда повышать |
+| ------ | ---------------|
+| MAJOR | ломающие изменения CLI/конфига |
+| MINOR | новые команды, провайдеры |
+| PATCH | багфиксы, docs, CI | 
+
+Источник версии при сборке:
+1. `git describe --tags` -> тег `v1.2.3`
+2. иначе `dev` + short commit
+
+| Поле | Источник |
+| ---- |----------|
+| `version` | git tag `vX.Y.Z` или `dev` |
+| `commit` | `git rev-parse --short HEAD` |
+| `built` | UTC timestamp сборки |
+
+Сборка: `task build` / CI / релиз - через ldflags в `pkg/version`.
+
+```bash
+./bin/assistant version
+
+`VERSION:`
+`1.0.0`

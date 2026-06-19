@@ -1,2 +1,8 @@
 .env
+
+# local / IDE / build artifacts
+.idea/
+.task/
+bin/
+go.work
 go.work.sum

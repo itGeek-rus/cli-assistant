@@ -1,0 +1,16 @@
+{
+  "request": { "method": "GET", "urlPath": "/api/v1/applications" },
+  "response": {
+    "status": 200,
+    "headers": { "Content-Type": "application/json" },
+    "jsonBody": {
+      "items": [{
+        "metadata": { "name": "demo-app", "namespace": "default" },
+        "status": {
+          "sync": { "status": "Synced" },
+          "health": { "status": "Healthy" }
+        }
+      }]
+    }
+  }
+}

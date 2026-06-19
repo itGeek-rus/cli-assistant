@@ -1,0 +1,13 @@
+{
+  "request": { "method": "GET", "urlPath": "/api/v2/alerts" },
+  "response": {
+    "status": 200,
+    "headers": { "Content-Type": "application/json" },
+    "jsonBody": [{
+      "labels": { "alertname": "HighCPU", "app": "demo-app", "severity": "warning" },
+      "annotations": { "summary": "CPU high" },
+      "startsAt": "2026-05-26T10:00:00Z",
+      "status": { "state": "active" }
+    }]
+  }
+}
