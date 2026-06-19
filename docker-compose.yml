@@ -1,2 +1,24 @@
-# Локальный dev-стенд (этап 8). Сейчас не обязателен для CLI.
-services: {}
+services:
+  prometheus:
+    image: prom/prometheus:v2.55.0
+    ports: ["9090:9090"]
+    volumes:
+      - ./deploy/dev/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+
+  alertmanager:
+    image: prom/alertmanager:v0.28.0
+    ports: ["9093:9093"]
+    volumes:
+      - ./deploy/dev/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+
+  loki:
+    image: grafana/loki:3.0.0
+    ports: ["3100:3100"]
+    command: -config.file=/etc/loki/local-config.yaml
+
+  grafana:
+    image: grafana/grafana:11.3.0
+    ports: ["3000:3000"]
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    depends_on: [prometheus, loki]

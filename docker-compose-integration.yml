@@ -4,18 +4,25 @@ services:
     volumes:
       - ./testdata/argocd:/home/wiremock
     ports:
-      - ["8080:8080"]
+      - "8080:8080"
 
   prometheus-mock:
     image: wiremock/wiremock:3.9.1
     volumes:
       - ./testdata/prometheus:/home/wiremock
     ports:
-      - ["9090:8080"]
+      - "19090:8080"
 
   loki-mock:
     image: wiremock/wiremock:3.9.1
     volumes:
       - ./testdata/loki:/home/wiremock
     ports:
-      - ["3100:8080"]
+      - "13100:8080"
+
+  alertmanager-mock:
+    image: wiremock/wiremock:3.9.1
+    volumes:
+      - ./testdata/alertmanager:/home/wiremock
+    ports:
+      - "19093:8080"

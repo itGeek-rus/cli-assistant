@@ -15,3 +15,9 @@ func TestString_ContainsBuildMetadata(t *testing.T) {
 		}
 	}
 }
+
+func TestIsRelease(t *testing.T) {
+	if version.IsRelease() {
+		t.Fatalf("default build should not be a release")
+	}
+}

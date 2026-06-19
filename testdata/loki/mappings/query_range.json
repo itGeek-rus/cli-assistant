@@ -1,0 +1,16 @@
+{
+  "request": { "method": "GET", "urlPath": "/api/v1/query_range" },
+  "response": {
+    "status": 200,
+    "headers": { "Content-Type": "application/json" },
+    "jsonBody": {
+      "status": "success",
+      "data": {
+        "result": [{
+          "stream": { "app": "demo-app" },
+          "values": [["1710000000000000000", "hello"]]
+        }]
+      }
+    }
+  }
+}
