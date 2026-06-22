@@ -2,6 +2,7 @@ package cli
 
 import (
 	"cli-assistant/internal/config"
+	httpserver "cli-assistant/internal/delivery/http"
 	"cli-assistant/internal/usecase"
 	"context"
 	"fmt"
@@ -19,6 +20,7 @@ type App struct {
 	deployment *usecase.Deployment
 	observe    *usecase.Observability
 	inspector  *usecase.Inspector
+	httpServer *httpserver.Server
 	version    string
 	commit     string
 	buildDate  string
@@ -29,12 +31,13 @@ func NewApp(
 	observe *usecase.Observability,
 	deployment *usecase.Deployment,
 	inspector *usecase.Inspector,
+	httpServer *httpserver.Server,
 	log *slog.Logger,
 	version, commit, buildDate string,
 ) *App {
 	return &App{
 		cfg: cfg, observe: observe, deployment: deployment,
-		inspector: inspector, log: log,
+		inspector: inspector, httpServer: httpServer, log: log,
 		version: version, commit: commit, buildDate: buildDate,
 	}
 }
@@ -54,6 +57,7 @@ func (a *App) Run() int {
 
 	root.AddCommand(
 		a.versionCmd(),
+		newServerCmd(a),
 		newDeployCmd(a),
 		newObserveCmd(a),
 	)

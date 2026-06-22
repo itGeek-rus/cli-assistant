@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/joho/godotenv"
 	"gopkg.in/yaml.v3"
 )
 
@@ -20,10 +21,21 @@ type Config struct {
 	GitOps        GitOpsConfig        `yaml:"gitops"`
 	Observability ObservabilityConfig `yaml:"observability"`
 	Profiles      map[string]Profile  `yaml:"profiles"`
+	Database      DatabaseConfig      `yaml:"database"`
+	API           APIConfig           `yaml:"api"`
 }
 
 type GitOpsConfig struct {
 	Provider string `yaml:"provider"`
+}
+
+type DatabaseConfig struct {
+	URL string `yaml:"url"`
+}
+
+type APIConfig struct {
+	Addr  string `yaml:"addr"`
+	Token string `yaml:"-"` // only from env
 }
 
 type ObservabilityConfig struct {
@@ -61,6 +73,9 @@ func Default() Config {
 				GitOpsTokenEnv: "ARGOCD_AUTH_TOKEN",
 			},
 		},
+		API: APIConfig{
+			Addr: ":8080",
+		},
 	}
 }
 
@@ -84,6 +99,8 @@ func Path() (string, error) {
 }
 
 func Load() (Config, error) {
+	_ = godotenv.Load(".env")
+
 	cfg := Default()
 
 	path, err := Path()
@@ -130,6 +147,17 @@ func applyEnv(cfg *Config) {
 	}
 	if v := os.Getenv(EnvPrefix + "_ALERTS_PROVIDER"); v != "" {
 		cfg.Observability.AlertsProvider = v
+	}
+	if v := os.Getenv(EnvPrefix + "_DATABASE_URL"); v != "" {
+		cfg.Database.URL = v
+	}
+	if v := os.Getenv(EnvPrefix + "_API_ADDR"); v != "" {
+		cfg.API.Addr = v
+	}
+	if v := os.Getenv(EnvPrefix + "_API_TOKEN"); v != "" {
+		cfg.API.Token = v
+	} else if v := os.Getenv(EnvPrefix + "_TOKEN"); v != "" {
+		cfg.API.Token = v // legacy alias
 	}
 }
 
