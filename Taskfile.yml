@@ -219,3 +219,14 @@ tasks:
   dev:down:
     cmds:
       - docker compose down -v
+
+  db:up:
+    cmds: [docker compose up -d postgres migrate]
+
+  db:migrate:
+    cmds:
+      - migrate -path migrations/sql -database "$CLI_ASSISTANT_DATABASE_URL" up
+
+  db:down:
+    cmds:
+      - migrate -path migrations/sql -database "$CLI_ASSISTANT_DATABASE_URL" down 1

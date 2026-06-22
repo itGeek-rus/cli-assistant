@@ -31,6 +31,10 @@ components:
     in: pkg/**
   platform:
     in: internal/platform/**
+  delivery_http:
+    in: internal/delivery/http/**
+  adapter_postgres:
+    in: internal/adapter/postgres/**
 
 deps:
   cmd:
@@ -42,6 +46,7 @@ deps:
       - config
       - pkg
       - domain
+      - delivery_http
 
   usecase:
     mayDependOn:
@@ -78,3 +83,15 @@ deps:
     mayDependOn:
       - domain
     anyVendorDeps: true
+
+  delivery_http:
+    mayDependOn:
+    - usecase
+    - config
+    - pkg
+    - domain
+
+  adapter_postgres:
+    mayDependOn:
+    - domain
+    - config

@@ -22,3 +22,46 @@ services:
     environment:
       GF_SECURITY_ADMIN_PASSWORD: admin
     depends_on: [prometheus, loki]
+
+  postgres:
+    image: postgres:16-alpine
+    ports: ["5432:5432"]
+    environment:
+      POSTGRES_USER: assistant
+      POSTGRES_PASSWORD: assistant
+      POSTGRES_DB: assistant
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U assistant -d assistant"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  migrate:
+    image: migrate/migrate:v4.18.1
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./migrations/sql:/migrations
+    command:
+      - "-path=/migrations"
+      - "-database=postgres://assistant:assistant@postgres:5432/assistant?sslmode=disable"
+      - "up"
+
+  api:
+    build: .
+    command: ["/usr/local/bin/assistant", "server"]
+    ports: ["8080:8080"]
+    env_file: [.env]
+    environment:
+      CLI_ASSISTANT_DATABASE_URL: postgres://assistant:assistant@postgres:5432/assistant?sslmode=disable
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    volumes:
+      - ${HOME}/.config/cli_assistant:/home/nonroot/.config/cli_assistant:ro
+
+volumes:
+  pgdata:

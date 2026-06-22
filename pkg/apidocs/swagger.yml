@@ -1,6 +1,23 @@
 openapi: 3.0.3
 info:
   title: cli-assistant API
-  version: 0.0.0
-  description: Placeholder. HTTP API not implemented yet.
-paths: {}
+  version: 1.0.0
+paths:
+  /health:
+    get:
+      summary: Liveness
+  /version:
+    get:
+      summary: Build and Go runtime info
+  /v1/deploy/applications:
+    get:
+      summary: List GitOps applications
+      security: [{ bearerAuth: [] }]
+  /v1/deploy/applications/{name}/inspect:
+    get:
+      summary: Inspect app (saved to PostgreSQL)
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
