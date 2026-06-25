@@ -24,6 +24,9 @@ func newContainer() (*container, error) {
 	if err != nil {
 		return nil, fmt.Errorf("load config: %w", err)
 	}
+	if err := cfg.Validate(); err != nil {
+		return nil, fmt.Errorf("config: %w", err)
+	}
 
 	logger := log.New(cfg.LogLevel, os.Stderr)
 
@@ -60,7 +63,7 @@ func newContainer() (*container, error) {
 	})
 
 	return &container{
-		app: cli.NewApp(cfg, obs, dep, inspector, httpSrv, logger,
+		app: cli.NewApp(cfg, obs, dep, inspector, httpSrv, hist, logger,
 			version.Version, version.Commit, version.BuildDate),
 	}, nil
 }

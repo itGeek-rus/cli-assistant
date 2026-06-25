@@ -122,6 +122,33 @@ profiles:
 | `CLI_ASSISTANT_LOGS_PROVIDER` | `noop`, `loki` |
 | `CLI_ASSISTANT_ALERTS_PROVIDER` | `noop`, `alertmanager` |
 | `ARGOCD_AUTH_TOKEN` | токен Argo CD (имя задаётся в `gitops_token_env`) |
+| `CLI_ASSISTANT_DATABASE_URL` | PostgreSQL DSN (история команд) |
+| `CLI_ASSISTANT_API_ADDR` | адрес REST API (по умолчанию `:8080`) |
+| `CLI_ASSISTANT_API_TOKEN` | Bearer-токен для REST API |
+
+Скопируй `.env.example` → `.env` для локальной разработки.
+
+## REST API
+
+```bash
+cp .env.example .env
+task local-run          # postgres + migrate + server
+# или вручную:
+task db:up && ./bin/assistant server
+```
+
+Эндпоинты (с Bearer-токеном, если задан `CLI_ASSISTANT_API_TOKEN`):
+
+| Метод | Путь |
+|-------|------|
+| GET | `/health`, `/version` |
+| GET | `/v1/deploy/applications` |
+| GET | `/v1/deploy/applications/{name}` |
+| GET | `/v1/deploy/applications/{name}/inspect` |
+| GET | `/v1/observe/health`, `/v1/observe/query?expr=up` |
+| GET | `/v1/history/commands?limit=50` |
+
+Postman/curl: `Authorization: Bearer <CLI_ASSISTANT_API_TOKEN>`.
 
 ## Команды
 
@@ -132,6 +159,7 @@ profiles:
 | Команда | Описание |
 |---------|----------|
 | `assistant version` | версия, commit, дата сборки, активный профиль |
+| `assistant server` | REST API сервер |
 | `assistant --help` | справка |
 
 ### GitOps (`deploy`)
@@ -233,6 +261,9 @@ task arch               # go-arch-lint
 task cleancode          # fmt, vet, lint, gosec, test, arch
 task docker:build       # Docker-образ
 task docker:run -- version
+
+# REST API локально
+task local-run
 
 # демо на noop
 task demo:list

@@ -221,6 +221,7 @@ tasks:
       - docker compose down -v
 
   db:up:
+    desc: Start Postgres and run migrations
     cmds: [docker compose up -d postgres migrate]
 
   db:migrate:
@@ -230,3 +231,10 @@ tasks:
   db:down:
     cmds:
       - migrate -path migrations/sql -database "$CLI_ASSISTANT_DATABASE_URL" down 1
+
+  local-run:
+    desc: Start postgres, migrate, build and run REST API locally
+    deps: [build, db:up]
+    dotenv: ['.env']
+    cmds:
+      - '{{.OUT}} server'
