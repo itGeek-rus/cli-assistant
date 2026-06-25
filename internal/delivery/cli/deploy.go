@@ -27,7 +27,7 @@ func newDeployListCmd(a *App) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list",
 		Short: "List GitOps applications",
-		RunE: func(cmd *cobra.Command, _ []string) error {
+		RunE: a.wrapRunE(func(cmd *cobra.Command, _ []string) error {
 			res, err := a.deployment.List(cmd.Context(), deploy.ListFilter{
 				Namespace:  namespace,
 				NamePrefix: namePrefix,
@@ -37,7 +37,7 @@ func newDeployListCmd(a *App) *cobra.Command {
 			}
 			printer := output.NewPrinter(output.ParseFormat(a.cfg.Output), cmd.OutOrStdout())
 			return printer.PrintApplications(res.Applications)
-		},
+		}),
 	}
 	cmd.Flags().StringVar(&namespace, "namespace", "", "Filter by namespace")
 	cmd.Flags().StringVar(&namePrefix, "name-prefix", "", "Filter by name prefix")
@@ -49,7 +49,7 @@ func newDeployStatusCmd(a *App) *cobra.Command {
 		Use:   "status [name]",
 		Short: "Show GitOps application status",
 		Args:  cobra.MaximumNArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: a.wrapRunE(func(cmd *cobra.Command, args []string) error {
 			name := ""
 			if len(args) > 0 {
 				name = args[0]
@@ -68,7 +68,7 @@ func newDeployStatusCmd(a *App) *cobra.Command {
 			}
 			printer := output.NewPrinter(output.ParseFormat(a.cfg.Output), cmd.OutOrStdout())
 			return printer.PrintApplication(res.Application)
-		},
+		}),
 	}
 	return cmd
 }
@@ -84,7 +84,7 @@ func newDeploySyncCmd(a *App) *cobra.Command {
 		Use:   "sync [name]",
 		Short: "Sync GitOps application",
 		Args:  cobra.ExactArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: a.wrapRunE(func(cmd *cobra.Command, args []string) error {
 			name := args[0]
 			confirmed := yes || dryRun
 			if !dryRun && !yes {
@@ -108,7 +108,7 @@ func newDeploySyncCmd(a *App) *cobra.Command {
 			}
 			printer := output.NewPrinter(output.ParseFormat(a.cfg.Output), cmd.OutOrStdout())
 			return printer.PrintSync(res)
-		},
+		}),
 	}
 	cmd.Flags().BoolVar(&dryRun, "dry-run", false, "Show what would be synced without applying")
 	cmd.Flags().BoolVar(&prune, "prune", false, "Prune resources during sync")
@@ -122,14 +122,14 @@ func newDeployDiffCmd(a *App) *cobra.Command {
 		Use:   "diff [name]",
 		Short: "Show diff for GitOps application",
 		Args:  cobra.ExactArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: a.wrapRunE(func(cmd *cobra.Command, args []string) error {
 			diff, err := a.deployment.Diff(cmd.Context(), args[0])
 			if err != nil {
 				return err
 			}
 			printer := output.NewPrinter(output.ParseFormat(a.cfg.Output), cmd.OutOrStdout())
 			return printer.PrintDiff(diff)
-		},
+		}),
 	}
 	return cmd
 }
@@ -139,7 +139,7 @@ func newDeployInspectCmd(a *App) *cobra.Command {
 		Use:   "inspect [name]",
 		Short: "Inspect app: GitOps status + alerts + metrics + logs",
 		Args:  cobra.ExactArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: a.wrapRunE(func(cmd *cobra.Command, args []string) error {
 			res, err := a.inspector.Inspect(cmd.Context(), args[0])
 			if err != nil {
 				return err
@@ -165,6 +165,6 @@ func newDeployInspectCmd(a *App) *cobra.Command {
 			}
 			printer := output.NewPrinter(output.ParseFormat(a.cfg.Output), cmd.OutOrStdout())
 			return printer.PrintInspect(view)
-		},
+		}),
 	}
 }
